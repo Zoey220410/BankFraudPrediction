@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Machine Learning Prediction and Feedback</title>
+</head>
+<body>
+
+<h1>Submit Input Data for Prediction</h1>
+<form id="inputForm">
+    <!-- Add input fields corresponding to the UserInput model attributes -->
+    <input type="text" id="income" name="income" placeholder="Income">
+    <input type="text" id="name_email_similarity" name="name_email_similarity" placeholder="Name-Email Similarity">
+    <!-- Add other input fields as necessary -->
+    <button type="submit">Submit Data for Prediction</button>
+</form>
+
+<h2>Prediction Result</h2>
+<div id="predictionResult"></div>
+
+<h2>Feedback on Prediction</h2>
+<form id="feedbackForm" style="display:none;">
+    <input type="hidden" id="predictionId" name="predictionId">
+    <label>
+        Was the prediction accurate?
+        <input type="checkbox" id="feedback" name="feedback">
+    </label>
+    <button type="submit">Submit Feedback</button>
+</form>
+
+<script>
+document.getElementById('inputForm').onsubmit = function(event) {
+    event.preventDefault();
+
+    // Collect data from the form
+    var formData = {
+        // Assume all fields are required for prediction
+        'income': document.getElementById('income').value,
+        'name_email_similarity': document.getElementById('name_email_similarity').value,
+        // Collect other form data...
+    };
+
+    // Send the data to the backend for a prediction
+    fetch('/upload-data', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(formData)
+    })
+    .then(response => response.json())
+    .then(data => {
+        // Display the prediction result
+        document.getElementById('predictionResult').textContent = 'Prediction: ' + data.prediction;
+        document.getElementById('predictionId').value = data.prediction_id;
+        document.getElementById('feedbackForm').style.display = 'block';
+    })
+    .catch(error => console.error('Error:', error));
+};
+
+document.getElementById('feedbackForm').onsubmit = function(event) {
+    event.preventDefault();
+
+    // Collect feedback and the prediction ID
+    var feedbackData = {
+        'id': document.getElementById('predictionId').value,
+        'feedback': document.getElementById('feedback').checked
+    };
+
+    // Send feedback to the backend
+    fetch('/submit-feedback', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(feedbackData)
+    })
+    .then(response => response.json())
+    .then(data => {
+        alert('Feedback submitted successfully!');
+    })
+    .catch(error => console.error('Error:', error));
+};
+</script>
+
+</body>
+</html>
